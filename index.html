@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wyndish.space // Cyber-Terminal Portfolio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scrollbar-width: thin;
+            scrollbar-color: #a855f7 #030305;
+        }
+
+        body {
+            background-color: #030305;
+            color: #ffffff;
+            font-family: 'Courier New', Courier, monospace;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        canvas#bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+        }
+
+        .wrapper {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Top Bar Navigation HUD */
+        .hud-nav {
+            background: rgba(10, 8, 18, 0.9);
+            border: 1px solid #00f0ff;
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.25);
+            border-radius: 6px;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .hud-brand {
+            font-size: 1.2rem;
+            color: #00f0ff;
+            font-weight: bold;
+            text-shadow: 0 0 12px rgba(0, 240, 255, 0.7);
+            letter-spacing: 2px;
+        }
+
+        .hud-status {
+            display: flex;
+            gap: 20px;
+            font-size: 0.85rem;
+            color: #a855f7;
+            text-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
+        }
+
+        .pulse-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #00ff66;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00ff66;
+            animation: pulse 1.5s infinite;
+            margin-right: 5px;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 18px #00ff66; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        /* Main Grid Section */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+        }
+
+        @media(min-width: 850px) {
+            .main-grid {
+                grid-template-columns: 1.4fr 0.9fr;
+            }
+        }
+
+        .card {
+            background: rgba(8, 6, 14, 0.88);
+            border: 1px solid rgba(0, 240, 255, 0.4);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+            border-radius: 6px;
+            padding: 20px;
+            backdrop-filter: blur(8px);
+        }
+
+        .card-title {
+            color: #a855f7;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed rgba(168, 85, 247, 0.4);
+            padding-bottom: 8px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-shadow: 0 0 8px rgba(168, 85, 247, 0.4);
+        }
+
+        /* Terminal Window */
+        .terminal {
+            background: #010103;
+            border: 1px solid #332244;
+            border-radius: 4px;
+            padding: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .ascii-art {
+            color: #00f0ff;
+            white-space: pre;
+            font-size: 0.65rem;
+            line-height: 1.1;
+            text-shadow: 0 0 12px rgba(0, 240, 255, 0.8);
+        }
+
+        .sys-info {
+            flex: 1;
+            min-width: 240px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .sys-info b {
+            color: #a855f7;
+        }
+
+        /* Bio Details / Tabs */
+        .bio-text {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #cccccc;
+        }
+
+        .bio-text span {
+            color: #00f0ff;
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .tag {
+            background: rgba(0, 240, 255, 0.08);
+            border: 1px solid #00f0ff;
+            color: #00f0ff;
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            border-radius: 3px;
+            box-shadow: 0 0 6px rgba(0, 240, 255, 0.25);
+        }
+
+        .tag.purple {
+            background: rgba(168, 85, 247, 0.08);
+            border: 1px solid #a855f7;
+            color: #a855f7;
+            box-shadow: 0 0 6px rgba(168, 85, 247, 0.25);
+        }
+
+        /* Audio & Real Visualizer Hub */
+        .audio-hub {
+            background: rgba(12, 6, 20, 0.92);
+            border: 1px solid #a855f7;
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.3);
+            border-radius: 6px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .audio-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .track-info {
+            font-size: 0.9rem;
+            color: #ffffff;
+        }
+
+        .track-info b {
+            color: #00f0ff;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .cyber-btn {
+            background: transparent;
+            border: 1px solid #00f0ff;
+            color: #00f0ff;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            font-size: 0.85rem;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.25);
+        }
+
+        .cyber-btn:hover {
+            background: #00f0ff;
+            color: #000;
+            box-shadow: 0 0 20px #00f0ff;
+        }
+
+        .cyber-btn.purple {
+            border-color: #a855f7;
+            color: #a855f7;
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.25);
+        }
+
+        .cyber-btn.purple:hover {
+            background: #a855f7;
+            color: #000;
+            box-shadow: 0 0 20px #a855f7;
+        }
+
+        /* Real Audio-Synced Visualizer Box */
+        .visualizer-box {
+            width: 100%;
+            height: 110px;
+            background: #020204;
+            border: 1px solid #332244;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        canvas#visCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Interactive Projects & Links Matrix */
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        .matrix-item {
+            background: rgba(0, 240, 255, 0.03);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            padding: 15px;
+            border-radius: 4px;
+            transition: 0.3s ease;
+        }
+
+        .matrix-item:hover {
+            border-color: #00f0ff;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .matrix-item h3 {
+            font-size: 0.95rem;
+            color: #00f0ff;
+            margin-bottom: 6px;
+        }
+
+        .matrix-item p {
+            font-size: 0.8rem;
+            color: #aaaaaa;
+            line-height: 1.4;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #665577;
+            padding: 10px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Hyper-Interactive Particle Background -->
+    <canvas id="bgCanvas"></canvas>
+
+    <div class="wrapper">
+        <!-- Top HUD -->
+        <div class="hud-nav">
+            <div class="hud-brand">WYNDISH.SPACE // PORTFOLIO</div>
+            <div class="hud-status">
+                <div><span class="pulse-dot"></span>SYSTEM ONLINE</div>
+                <div>ARCH LINUX KERNEL</div>
+            </div>
+        </div>
+
+        <!-- Main Section -->
+        <div class="main-grid">
+            <!-- Left Column: Terminal & Fastfetch with Clean WYNDISH Logo -->
+            <div class="card">
+                <div class="card-title">System Execution // Fastfetch</div>
+                <div class="terminal">
+                    <div class="ascii-art">
+  _  _ ___ ___ _  _ ___ _ _ _ _   
+  |\/|  |   |  |\ |  |  | | | |   
+  |  |  |   |  | \|  |  |_|_| |___
+                    </div>
+                    <div class="sys-info">
+                        <p><b>wyndish@archlinux</b></p>
+                        <p>-------------------------</p>
+                        <p><b>OS:</b> Arch Linux x86_64</p>
+                        <p><b>Host:</b> Custom Rig / Zsh</p>
+                        <p><b>Uptime:</b> 1337 hours, 42 mins</p>
+                        <p><b>Dotfiles:</b> Caelestia Configs</p>
+                        <p><b>Editor:</b> Neovim / VS Code</p>
+                        <p><b>Vibe:</b> Maximum Efficiency</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Chill Persona Info -->
+            <div class="card">
+                <div class="card-title">Identity // Chill Gamer</div>
+                <div class="bio-text">
+                    Yo, I'm <span>Wyndish</span>. Living life on the terminal. Professional anime watcher and hardcore Minecraft automation engineer. When I'm not compiling packages on Arch, you can find me exploring infinite seeds and building massive automated bases.
+                </div>
+                <div class="tags-container">
+                    <span class="tag">Arch Linux</span>
+                    <span class="tag">Caelestia Dotfiles</span>
+                    <span class="tag purple">Minecraft Pro</span>
+                    <span class="tag purple">Anime Watcher</span>
+                    <span class="tag">Cyber Music</span>
+                    <span class="tag">Cyberpunk Aesthetic</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Audio & Real Song-Synced Visualizer Hub -->
+        <div class="audio-hub">
+            <div class="card-title" style="margin-bottom: 0; border: none; padding: 0;">Audio Transmission // Live Frequency Analyzer</div>
+            <div class="audio-controls">
+                <div class="track-info">
+                    ♫ <b>Stream:</b> Cyber Chillhop / Ambient Soundscape<br>
+                    <span style="font-size: 0.75rem; color: #aa88cc;" id="audioStatus">Status: Initializing Autoplay...</span>
+                </div>
+                <div class="action-btns">
+                    <button class="cyber-btn" id="audioToggle">PAUSE AUDIO</button>
+                    <button class="cyber-btn purple" id="skipTrack">RESTART STREAM</button>
+                </div>
+            </div>
+            <div class="visualizer-box">
+                <canvas id="visCanvas"></canvas>
+            </div>
+        </div>
+
+        <!-- Extra Projects / Links Matrix -->
+        <div class="card">
+            <div class="card-title">Database // Repositories & Modules</div>
+            <div class="matrix-grid">
+                <div class="matrix-item">
+                    <h3>[ Caelestia Dotfiles ]</h3>
+                    <p>My custom rice featuring Caelestia configurations, window managers, and zsh setups.</p>
+                </div>
+                <div class="matrix-item">
+                    <h3>[ Minecraft Scripts ]</h3>
+                    <p>Automated redstone logic blueprints and server optimization tweaks for smooth gameplay.</p>
+                </div>
+                <div class="matrix-item">
+                    <h3>[ Anime Tracker ]</h3>
+                    <p>Curated lists of top-tier sci-fi and cyberpunk series recommendations.</p>
+                </div>
+                <div class="matrix-item">
+                    <h3>[ Cyber Security ]</h3>
+                    <p>Network security logs, packet analyzers, and terminal utility tools.</p>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            // WYNDISH.SPACE — BUILT FOR MAXIMUM VISIBILITY & VIBES //
+        </footer>
+    </div>
+
+    <!-- Background Audio Element -->
+    <audio id="bgMusic" crossorigin="anonymous" loop autoplay>
+        <source src="https://stream.zeno.fm/f3wvbbqmdg8uv" type="audio/aac">
+        <source src="https://actions.google.com/sounds/v1/ambiences/coffee_shop.ogg" type="audio/ogg">
+    </audio>
+
+    <script>
+        // 1. Hyper-Interactive Cursor-Reactive Particle Background
+        const bgCanvas = document.getElementById('bgCanvas');
+        const bgCtx = bgCanvas.getContext('2d');
+
+        let w = bgCanvas.width = window.innerWidth;
+        let h = bgCanvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            w = bgCanvas.width = window.innerWidth;
+            h = bgCanvas.height = window.innerHeight;
+        });
+
+        const mouse = { x: null, y: null, radius: 180, vx: 0, vy: 0, lastX: null, lastY: null };
+
+        window.addEventListener('mousemove', (e) => {
+            if (mouse.lastX !== null) {
+                mouse.vx = e.clientX - mouse.lastX;
+                mouse.vy = e.clientY - mouse.lastY;
+            }
+            mouse.lastX = mouse.x = e.clientX;
+            mouse.lastY = mouse.y = e.clientY;
+        });
+
+        window.addEventListener('mouseout', () => {
+            mouse.x = null;
+            mouse.y = null;
+            mouse.vx = 0;
+            mouse.vy = 0;
+        });
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * w;
+                this.y = Math.random() * h;
+                this.vx = (Math.random() - 0.5) * 1.8;
+                this.vy = (Math.random() - 0.5) * 1.8;
+                this.size = Math.random() * 2.2 + 1;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > w) this.vx *= -1;
+                if (this.y < 0 || this.y > h) this.vy *= -1;
+
+                if (mouse.x !== null && mouse.y !== null) {
+                    const dx = this.x - mouse.x;
+                    const dy = this.y - mouse.y;
+                    const dist = Math.hypot(dx, dy);
+                    if (dist < mouse.radius) {
+                        const force = (mouse.radius - dist) / mouse.radius;
+                        this.x += (dx / dist) * force * 3 + mouse.vx * 0.1;
+                        this.y += (dy / dist) * force * 3 + mouse.vy * 0.1;
+                    }
+                }
+            }
+            draw() {
+                bgCtx.fillStyle = '#00f0ff';
+                bgCtx.beginPath();
+                bgCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                bgCtx.fill();
+            }
+        }
+
+        const particles = Array.from({ length: 95 }, () => new Particle());
+
+        function animateBg() {
+            bgCtx.clearRect(0, 0, w, h);
+
+            particles.forEach((p, index) => {
+                p.update();
+                p.draw();
+
+                for (let j = index + 1; j < particles.length; j++) {
+                    const p2 = particles[j];
+                    const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                    if (dist < 120) {
+                        bgCtx.strokeStyle = `rgba(0, 240, 255, ${(1 - dist / 120) * 0.8})`;
+                        bgCtx.lineWidth = 0.6;
+                        bgCtx.beginPath();
+                        bgCtx.moveTo(p.x, p.y);
+                        bgCtx.lineTo(p2.x, p2.y);
+                        bgCtx.stroke();
+                    }
+                }
+
+                if (mouse.x !== null && mouse.y !== null) {
+                    const mDist = Math.hypot(p.x - mouse.x, p.y - mouse.y);
+                    if (mDist < mouse.radius) {
+                        bgCtx.strokeStyle = `rgba(168, 85, 247, ${(1 - mDist / mouse.radius)})`;
+                        bgCtx.lineWidth = 0.9;
+                        bgCtx.beginPath();
+                        bgCtx.moveTo(p.x, p.y);
+                        bgCtx.lineTo(mouse.x, mouse.y);
+                        bgCtx.stroke();
+                    }
+                }
+            });
+
+            requestAnimationFrame(animateBg);
+        }
+        animateBg();
+
+        // 2. Real Web Audio API Frequency Analyser
+        const visCanvas = document.getElementById('visCanvas');
+        const visCtx = visCanvas.getContext('2d');
+
+        function resizeVis() {
+            visCanvas.width = visCanvas.parentElement.clientWidth;
+            visCanvas.height = visCanvas.parentElement.clientHeight;
+        }
+        window.addEventListener('resize', resizeVis);
+        resizeVis();
+
+        const bgMusic = document.getElementById('bgMusic');
+        const audioStatus = document.getElementById('audioStatus');
+        const audioBtn = document.getElementById('audioToggle');
+
+        let audioCtx, analyser, dataArray, source;
+        let isAudioInitialized = false;
+
+        function initAudioAnalyzer() {
+            if (isAudioInitialized) return;
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+                analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 128;
+                
+                source = audioCtx.createMediaElementSource(bgMusic);
+                source.connect(analyser);
+                analyser.connect(audioCtx.destination);
+                
+                dataArray = new Uint8Array(analyser.frequencyBinCount);
+                isAudioInitialized = true;
+                audioStatus.textContent = "Status: Live Audio Analyzer Active";
+            } catch (e) {
+                console.log("Audio analyzer fallback mode:", e);
+                audioStatus.textContent = "Status: Simulated Visualizer Active";
+            }
+        }
+
+        let fallbackPhase = 0;
+
+        function renderVisualizer() {
+            visCtx.clearRect(0, 0, visCanvas.width, visCanvas.height);
+
+            const bufferLength = analyser ? analyser.frequencyBinCount : 32;
+            if (analyser && isAudioInitialized) {
+                analyser.getByteFrequencyData(dataArray);
+            }
+
+            const barCount = 44;
+            const barWidth = (visCanvas.width / barCount) - 3;
+            fallbackPhase += 0.08;
+
+            for (let i = 0; i < barCount; i++) {
+                let barHeight = 10;
+
+                if (analyser && isAudioInitialized && dataArray) {
+                    const dataIndex = Math.floor((i / barCount) * (bufferLength / 2));
+                    const value = dataArray[dataIndex] || 0;
+                    barHeight = (value / 255) * (visCanvas.height - 10) + 5;
+                } else {
+                    const wave = Math.abs(Math.sin(fallbackPhase + i * 0.25));
+                    barHeight = wave * (visCanvas.height - 20) + 10;
+                }
+
+                const x = i * (barWidth + 3);
+                const y = visCanvas.height - barHeight;
+
+                const grad = visCtx.createLinearGradient(0, visCanvas.height, 0, 0);
+                grad.addColorStop(0, '#00f0ff');
+                grad.addColorStop(1, '#a855f7');
+
+                visCtx.fillStyle = grad;
+                visCtx.fillRect(x, y, barWidth, barHeight);
+            }
+
+            requestAnimationFrame(renderVisualizer);
+        }
+        renderVisualizer();
+
+        // 3. Autoplay & Controls Handling
+        bgMusic.volume = 0.6;
+        
+        const startAudioPlayback = () => {
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            bgMusic.play().then(() => {
+                initAudioAnalyzer();
+                audioBtn.textContent = 'PAUSE AUDIO';
+                audioStatus.textContent = "Status: Playing Live Stream";
+            }).catch(() => {
+                audioStatus.textContent = "Status: Autoplay blocked — Click PLAY AUDIO";
+                audioBtn.textContent = 'PLAY AUDIO';
+            });
+        };
+
+        window.addEventListener('load', startAudioPlayback);
+        document.addEventListener('click', startAudioPlayback, { once: true });
+
+        let isPlaying = true;
+        audioBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!isPlaying) {
+                if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+                bgMusic.play().then(() => {
+                    initAudioAnalyzer();
+                    isPlaying = true;
+                    audioBtn.textContent = 'PAUSE AUDIO';
+                    audioStatus.textContent = "Status: Playing Live Stream";
+                });
+            } else {
+                bgMusic.pause();
+                isPlaying = false;
+                audioBtn.textContent = 'PLAY AUDIO';
+                audioStatus.textContent = "Status: Paused";
+            }
+        });
+
+        document.getElementById('skipTrack').addEventListener('click', (e) => {
+            e.stopPropagation();
+            bgMusic.currentTime = 0;
+            bgMusic.play();
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            isPlaying = true;
+            audioBtn.textContent = 'PAUSE AUDIO';
+        });
+    </script>
+</body>
+</html>
